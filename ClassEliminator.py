@@ -11,8 +11,8 @@ js = json.load(open("config.json",mode="r",encoding="utf-8"))
 print(js)
 username = js["username"]
 password = js["password"]
-mode = 0    # mode = 0 ==> 通识选修课
-            # mode = 1 ==> 专业选修课
+mode = js["mode"]    # mode = 0 ==> 通识选修课
+                     # mode = 1 ==> 专业选修课
 course = js["course"]     # mode = 0 only
 apiKey = js["apiKey"]
 secretKey = js["secretKey"]
