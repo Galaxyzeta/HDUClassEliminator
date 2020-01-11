@@ -3,20 +3,22 @@ from selenium.webdriver.support.ui import Select
 import time
 import requests
 import base64
-import re
+import json
 from PIL import Image
 
 # Customization
-username = "xxxxxx"
-password = "xxxxxxxxxxxxx"
-mode = 1    # mode = 0 ==> 通识选修课
+js = json.load(open("config.json",mode="r",encoding="utf-8"))
+print(js)
+username = js["username"]
+password = js["password"]
+mode = 0    # mode = 0 ==> 通识选修课
             # mode = 1 ==> 专业选修课
-course = "抢课真难"     # mode = 0 only
-apiKey = "xxxxxxxxxxxxxxxxxx"
-secretKey = "xxxxxxxxxxxxxxxxxx"
-availableTime = ["周一第3,4,5节{第1-16周}"]
-teacherName = ['Mr.Galaxyzeta']
-refresh_rate = 1
+course = js["course"]     # mode = 0 only
+apiKey = js["apiKey"]
+secretKey = js["secretKey"]
+availableTime = js["availableTime"]
+teacherName = js["teacherName"]
+refresh_rate = js["refresh_rate"]
 
 # Constant
 mode1url = "http://jxgl.hdu.edu.cn/xsxjs.aspx?xkkh=CFFC1F35318E7623A1A76FC0EB9D301F04F2C37BC752A6DA17F29A452882A1348D2B62A607D45768&xh="+username
@@ -59,6 +61,7 @@ def eliminator():
     # Prepare Cookies
     cookiesForRequests = {}
     cookies = browser.get_cookies()
+    print(cookies)
     for i in range(len(cookies)):
         cookiesForRequests[cookies[i]['name']] = cookies[i]['value']
 
@@ -86,15 +89,14 @@ def eliminator():
                 # Elimination Available -- Start Elimination !
                 for i in range(1, len(class_tr)):
                     class_td = class_tr[i].find_elements_by_css_selector("tr>td")
-                    print(class_td[5].text)
-                    if class_td[5].text in availableTime:
+                    if class_td[5].text in availableTime and class_td[4].text in teacherName:
                         code = getCaptchaCode(cookiesForRequests)
                         class_td[0].find_element_by_css_selector("input").click()       # 选课
                         class_td[1].find_element_by_css_selector("input").click()       # 教材
                         browser.find_element_by_css_selector("span.footbutton input").send_keys(code)
                         browser.find_element_by_css_selector("span.footbutton input[type=submit]").click()
                         print("抢课过程结束，成功与否自行查看")
-                        break
+                        return
                 # Elimination Success (if no user mistake...)
                 # IMPORTANT PART
             time.sleep(refresh_rate)
@@ -121,7 +123,8 @@ def eliminator():
                     # IMPORTANT PART
             browser.refresh()
             time.sleep(refresh_rate)
-
+    else:
+        print("ERROR")
 
 def getAccessToken(apiKey, secretKey):
     url = "https://aip.baidubce.com/oauth/2.0/token"
